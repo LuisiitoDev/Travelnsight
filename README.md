@@ -6,41 +6,7 @@ Real-Time Visual Explorer: An AI-powered travel assistant app built with .NET MA
 
 ## Architecture Diagrams
 
-### Context Diagram
+## High Level Architecture
 
-![Context Diagram](docs/context-diagram.png)
-
-### Container Diagram
-
-![Container Diagram](docs/container-diagram.png)
-
-### Component Diagram
-
-![Component Diagram](docs/component-diagram.png)
-
----
-
-## How to View Diagrams
-
-The diagrams are stored in the `/docs` folder as PNG files exported from your diagramming tool (e.g., draw.io, Mermaid live editor, or other tools).
-
-You can update or regenerate them as needed.
-
----
-
-## Project Structure
-
-(Describe your folder/project structure briefly here or link to documentation)
-
----
-
-## Getting Started
-
-(Instructions on how to build/run your projects, if applicable)
-
----
-
-## License
-
-Specify your project license here.
+<img width="1282" height="597" alt="high level" src="https://github.com/user-attachments/assets/4aafc66a-175c-49cf-8851-c1c60c557929" />
 
