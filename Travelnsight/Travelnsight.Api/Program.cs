@@ -1,7 +1,7 @@
-using Azure;
-using Azure.AI.ContentSafety;
 using Travelnsight.Api.Extensions;
 using Travelnsight.Application.Interfaces;
+using Travelnsight.Application.UsesCases;
+using Travelnsight.Infraestructure.Configuration;
 using Travelnsight.Infraestructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,18 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddSingleton<IImageContentModerator, ImageContentModerator>();
-builder.Services.AddTransient(_ =>
-{
-    var endpoint = builder.Configuration["ContentSafetyEndpoint"];
-    var key = builder.Configuration["ContentSafetyKey"];
-    if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(key))
-    {
-        throw new InvalidOperationException("Content Safety endpoint and key must be configured.");
-    }
+builder.Services.Configure<AzureImageModeratorOptions>(options => builder.Configuration.GetSection("Azure:ImageModerator").Bind(options));
+builder.Services.Configure<AzureAIInferenceOptions>(options => builder.Configuration.GetSection("Azure:Inference").Bind(options));
+builder.Services.Configure<AzureCustomVisionOptions>(options => builder.Configuration.GetSection("Azure:CustomVision").Bind(options));
 
-    return new ContentSafetyClient(new Uri(endpoint), new AzureKeyCredential(key));
-});
+builder.Services.AddSingleton<IAIInferenceService, AIInferenceService>();
+builder.Services.AddSingleton<IImageContentModerator, ImageContentModerator>();
+builder.Services.AddSingleton<IVisionImageAnalysis, VisionImageAnalysis>();
+builder.Services.AddTransient<IImageAnalysisUseCase, ImageAnalysisUseCase>();
 
 var app = builder.Build();
 
@@ -35,28 +31,4 @@ app.UseHttpsRedirection();
 
 EndpointExtensions.MapVision(app);
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
