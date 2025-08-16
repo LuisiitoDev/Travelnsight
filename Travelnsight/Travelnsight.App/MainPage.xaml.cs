@@ -1,24 +1,43 @@
-﻿namespace Travelnsight.App
+﻿using Travelnsight.App.Dto;
+using Travelnsight.App.Interfaces;
+
+namespace Travelnsight.App
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
-
         public MainPage()
         {
             InitializeComponent();
         }
 
-        private void OnCounterClicked(object? sender, EventArgs e)
+        private void MyCamera_MediaCaptured(object sender, CommunityToolkit.Maui.Core.MediaCapturedEventArgs e)
         {
-            count++;
+            if (Dispatcher.IsDispatchRequired)
+            {
+                Dispatcher.Dispatch(async () =>
+                {
+                    MyImage.Source = ImageSource.FromStream(() => e.Media);
+                    var ms = new MemoryStream();
+                    await e.Media.CopyToAsync(ms);
 
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
+                    var result = await IPlatformApplication.Current!.Services.GetRequiredService<ITravelnsightService>()
+                    .Analyze(new VisionRequestDto
+                    {
+                        Image = ms.ToArray()
+                    });
 
-            SemanticScreenReader.Announce(CounterBtn.Text);
+                    LLMResult.Text = result.Response;
+
+                });
+                return;
+            }
+
+            MyImage.Source = ImageSource.FromStream(() => e.Media);
+        }
+
+        private async void Button_Clicked(object sender, EventArgs e)
+        {
+            await MyCamera.CaptureImage(CancellationToken.None);
         }
     }
 }

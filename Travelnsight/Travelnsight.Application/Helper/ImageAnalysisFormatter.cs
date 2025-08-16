@@ -9,25 +9,58 @@ public static class ImageAnalysisFormatter
     {
         ArgumentNullException.ThrowIfNull(analysis);
 
-        var tags = FormatAnalysisSection(analysis.Tags?.Values, t => t.Name, "None detected");
-        var objects = FormatAnalysisSection(analysis.Objects?.Values, o => string.Join(", ", o.Tags.Select(t => t.Name)), "None detected");
-        var ocrText = FormatAnalysisSection(analysis.Read?.Blocks, b => string.Join(" ", b.Lines.Select(l => l.Text)), "None detected");
+        var sb = new StringBuilder();
 
-        return new StringBuilder()
-            .AppendLine()
-            .AppendLine("Detected Elements:")
-            .AppendLine($"- Tags: {tags}")
-            .AppendLine($"- Objects: {objects}")
-            .AppendLine()
-            .AppendLine("Recognized Text (OCR):")
-            .AppendLine(ocrText)
-            .ToString();
+        sb.AppendLine("Describe the image as if you are a human observer. Do not mention that this is an analysis or that you are responding to a user.");
+        sb.AppendLine("Focus on what is visible, the scene, the people, objects, and context. You may also ask interesting questions about details in the scene.");
+        sb.AppendLine();
+
+        AppendCaption(sb, analysis.Caption?.Text);
+        AppendTags(sb, analysis.Tags?.Values);
+        AppendObjects(sb, analysis.Objects?.Values);
+        AppendOcrText(sb, analysis.Read?.Blocks);
+
+        return sb.ToString();
     }
 
-    private static string FormatAnalysisSection<T>(IEnumerable<T>? items, Func<T, string> selector, string defaultValue)
+    private static void AppendCaption(StringBuilder sb, string? caption)
     {
-        return items?.Any() == true
-            ? string.Join(", ", items.Select(selector))
-            : defaultValue;
+        if (!string.IsNullOrWhiteSpace(caption))
+        {
+            sb.AppendLine($"It looks like: {caption}.");
+        }
+    }
+
+    private static void AppendTags(StringBuilder sb, IEnumerable<DetectedTag>? tags)
+    {
+        var tagList = tags?.Select(t => t.Name).ToList() ?? [];
+        if (tagList.Any())
+        {
+            sb.AppendLine($"I also notice elements such as {string.Join(", ", tagList)}.");
+        }
+    }
+
+    private static void AppendObjects(StringBuilder sb, IEnumerable<DetectedObject>? objects)
+    {
+        if (objects == null || !objects.Any()) return;
+
+        sb.AppendLine("There are some distinct objects in the scene:");
+        foreach (var obj in objects)
+        {
+            var objTags = obj.Tags.Select(t => t.Name);
+            sb.AppendLine($"- One object appears with characteristics like: {string.Join(", ", objTags)}.");
+        }
+    }
+
+    private static void AppendOcrText(StringBuilder sb, IEnumerable<DetectedTextBlock>? blocks)
+    {
+        var lines = blocks?.Select(b => string.Join(" ", b.Lines.Select(l => l.Text))).ToList() ?? [];
+        if (!lines.Any()) return;
+
+        sb.AppendLine("Additionally, I can read some text in the image:");
+        foreach (var line in lines)
+        {
+            sb.AppendLine($"\"{line}\"");
+        }
     }
 }

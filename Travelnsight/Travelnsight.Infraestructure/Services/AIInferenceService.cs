@@ -14,7 +14,7 @@ public class AIInferenceService(IOptionsMonitor<AzureAIInferenceOptions> options
     {
         var client = new ChatCompletionsClient(
             new Uri(options.CurrentValue.Endpoint),
-            new AzureKeyCredential(options.CurrentValue.Credential),
+            new AzureKeyCredential(options.CurrentValue.Key),
             new AzureAIInferenceClientOptions());
 
         var request = new ChatCompletionsOptions
@@ -23,7 +23,7 @@ public class AIInferenceService(IOptionsMonitor<AzureAIInferenceOptions> options
             Model = GPT_4O,
         };
 
-        var response = await client.CompleteAsync(request);
+        var response = await client.CompleteAsync(request, cancellationToken);
 
         return response.Value.Content;
     }

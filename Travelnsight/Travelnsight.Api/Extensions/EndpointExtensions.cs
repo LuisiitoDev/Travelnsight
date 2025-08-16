@@ -10,7 +10,6 @@ public static class EndpointExtensions
                            .WithOpenApi();
 
         group.MapPost("/analyze", VisionAnalyzeHandler.ExecuteAsync)
-             .ProducesValidationProblem()
              .Produces(StatusCodes.Status401Unauthorized)
              .Produces(StatusCodes.Status400BadRequest)
              .Produces(StatusCodes.Status200OK);

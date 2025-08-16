@@ -15,6 +15,6 @@ public class ImageContentModerator(IOptionsMonitor<AzureImageModeratorOptions> o
         var request = new AnalyzeImageOptions(contentSafe);
         var response = await client.AnalyzeImageAsync(request, cancellationToken);
 
-        return response.Value.CategoriesAnalysis.Any(c => c.Severity >= 1);
+        return response.Value.CategoriesAnalysis.Any(c => c.Severity == 0);
     }
 }

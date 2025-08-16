@@ -6,9 +6,9 @@ namespace Travelnsight.Api.Handler;
 
 public static class VisionAnalyzeHandler
 {
-    public static async Task<IResult> ExecuteAsync([FromBody] byte[] image, [FromServices] IImageAnalysisUseCase imageAnalysis, CancellationToken cancellationToken)
+    public static async Task<IResult> ExecuteAsync(VisionRequestDto request, IImageAnalysisUseCase imageAnalysis, CancellationToken cancellationToken)
     {
-        var response = await imageAnalysis.Analyze(image, cancellationToken);
+        var response = await imageAnalysis.Analyze(request.Image, cancellationToken);
         return Results.Ok(new VisionResponseDto { Response = response });
     }
 }
